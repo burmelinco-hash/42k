@@ -12,7 +12,8 @@ export async function POST(req: NextRequest) {
 
     const arrayBuffer = await file.arrayBuffer();
     const base64 = Buffer.from(arrayBuffer).toString("base64");
-    const mediaType = file.type || "image/jpeg";
+    const allowed = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+    const mediaType = allowed.includes(file.type) ? file.type : "image/jpeg";
 
     const result = await analyzeMealPhoto(base64, mediaType);
 
