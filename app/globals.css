@@ -39,8 +39,9 @@ body {
   overscroll-behavior: none;
 }
 
-/* Safe area for bottom nav */
+/* Safe area for top notch/status bar and bottom nav */
 .page-content {
+  padding-top: env(safe-area-inset-top, 0px);
   padding-bottom: 88px;
   min-height: 100dvh;
 }
