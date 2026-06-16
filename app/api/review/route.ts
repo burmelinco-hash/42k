@@ -54,21 +54,23 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// GET — fetch existing review for a date
+// GET — Vercel cron calls this with x-vercel-cron header to generate; otherwise fetches existing
 export async function GET(req: NextRequest) {
   try {
-    const date = req.nextUrl.searchParams.get("date") ?? format(new Date(), "yyyy-MM-dd");
+    const isCron = req.headers.get("x-vercel-cron") === "1";
+    // Bangkok date (UTC+7)
+    const bangkokDate = new Date(Date.now() + 7 * 60 * 60 * 1000).toISOString().slice(0, 10);
+    const date = req.nextUrl.searchParams.get("date") ?? bangkokDate;
+
+    if (isCron) {
+      const review = await runReview(bangkokDate);
+      return NextResponse.json({ success: true, review });
+    }
+
     const review = await getReviewByDate(date);
     return NextResponse.json({ success: true, review });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Fetch failed";
     return NextResponse.json({ success: false, error: message }, { status: 500 });
   }
-}
-
-// Vercel Cron endpoint — GET with header x-vercel-cron
-// Cron schedule: 30 20 * * * (20:30 UTC — adjust for your timezone)
-export async function cronHandler() {
-  const date = format(new Date(), "yyyy-MM-dd");
-  return runReview(date);
 }
