@@ -6,21 +6,20 @@ const tabs = [
   {
     href: "/",
     label: "Today",
+    color: "var(--green)",
     icon: (active: boolean) => (
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-        <path
-          d="M12 2L3 9v13h6v-7h6v7h6V9L12 2z"
+        <path d="M12 2L3 9v13h6v-7h6v7h6V9L12 2z"
           fill={active ? "var(--green)" : "none"}
           stroke={active ? "var(--green)" : "#636366"}
-          strokeWidth="1.8"
-          strokeLinejoin="round"
-        />
+          strokeWidth="1.8" strokeLinejoin="round" />
       </svg>
     ),
   },
   {
     href: "/history",
     label: "History",
+    color: "var(--blue)",
     icon: (active: boolean) => (
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
         <rect x="3" y="4" width="18" height="18" rx="3"
@@ -33,8 +32,23 @@ const tabs = [
     ),
   },
   {
+    href: "/plan",
+    label: "Plan",
+    color: "var(--purple)",
+    icon: (active: boolean) => (
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"
+          stroke={active ? "var(--purple)" : "#636366"} strokeWidth="1.8" strokeLinecap="round"/>
+        <rect x="9" y="3" width="6" height="4" rx="1"
+          stroke={active ? "var(--purple)" : "#636366"} strokeWidth="1.8"/>
+        <path d="M9 12l2 2 4-4" stroke={active ? "var(--purple)" : "#636366"} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+      </svg>
+    ),
+  },
+  {
     href: "/progress",
     label: "Progress",
+    color: "var(--orange)",
     icon: (active: boolean) => (
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
         <path d="M4 20h16" stroke={active ? "var(--orange)" : "#636366"} strokeWidth="1.8" strokeLinecap="round"/>
@@ -86,9 +100,7 @@ export default function BottomNav() {
                 fontFamily: "var(--font-dm-sans, sans-serif)",
                 fontWeight: 500,
                 letterSpacing: 0.2,
-                color: active
-                  ? (t.href === "/" ? "var(--green)" : t.href === "/history" ? "var(--blue)" : "var(--orange)")
-                  : "#636366",
+                color: active ? t.color : "#636366",
               }}>
                 {t.label}
               </span>

@@ -119,7 +119,7 @@ export default function HistoryPage() {
           <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 3 }}>
             {paddedDays.map((day, i) => {
               if (!day) return <div key={i} />;
-              const dateStr   = day.toISOString().slice(0, 10);
+              const dateStr   = format(day, "yyyy-MM-dd"); // local time — avoids UTC shift bug
               const hasRun    = runDates.has(dateStr);
               const dayPlan   = planMap[dateStr];
               const isToday   = dateStr === today;
