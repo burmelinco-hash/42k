@@ -83,8 +83,8 @@ export default function TodayPage() {
   const [distanceInput, setDistanceInput]     = useState("");
   const [savingDistance, setSavingDistance]   = useState(false);
 
-  const loadData = async () => {
-    setLoading(true);
+  const loadData = async (silent = false) => {
+    if (!silent) setLoading(true);
     const [todayRes, histRes, noteRes] = await Promise.all([
       fetch(`/api/sheets?type=today&date=${today}`).then(r => r.json()),
       fetch(`/api/sheets?type=history`).then(r => r.json()),
@@ -92,7 +92,6 @@ export default function TodayPage() {
     ]);
     if (todayRes.success) setData(todayRes);
     if (histRes.success) {
-      // Get this week's runs (Week 1 = May 31 – Jun 6)
       const planStart = parseISO("2026-06-01");
       const weekNum   = Math.ceil((differenceInDays(todayDate, planStart) + 1) / 7);
       const weekPlan  = (histRes.plan || []).filter((d: any) => d.week === weekNum);
@@ -171,10 +170,15 @@ export default function TodayPage() {
     setPhotoPreview(null);
     setNutriForm({ mealType: "general", items: [] });
     setItemInput("");
-    loadData();
+    loadData(true); // silent background refresh
   };
 
   const handleRpe = async (runId: string, effort: number) => {
+    // Optimistic update — no page reload needed
+    setData((d: any) => d ? {
+      ...d,
+      runs: d.runs.map((r: any) => r.id === runId ? { ...r, effort } : r),
+    } : d);
     setRpeLoading(effort);
     await fetch("/api/runs", {
       method: "PATCH",
@@ -182,21 +186,25 @@ export default function TodayPage() {
       body: JSON.stringify({ id: runId, effort }),
     });
     setRpeLoading(null);
-    loadData();
   };
 
   const handleSaveDistance = async (runId: string) => {
     const km = parseFloat(distanceInput);
     if (!km || km <= 0) return;
     setSavingDistance(true);
+    // Optimistic update
+    setData((d: any) => d ? {
+      ...d,
+      runs: d.runs.map((r: any) => r.id === runId ? { ...r, distanceKm: km } : r),
+    } : d);
+    setEditingDistanceId(null);
     await fetch("/api/runs", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id: runId, distanceKm: km }),
     });
     setSavingDistance(false);
-    setEditingDistanceId(null);
-    loadData();
+    loadData(true); // silent background refresh
   };
 
   // ─── Derived data ──────────────────────────────────────────────────────────
@@ -320,7 +328,7 @@ export default function TodayPage() {
         }}>
           <div>
             <div style={{ fontSize: 11, fontFamily: "var(--font-dm-mono)", color: "rgba(235,235,245,0.62)", letterSpacing: 1, textTransform: "uppercase" }}>Race Day</div>
-            <div style={{ fontSize: 13, color: "rgba(235,235,245,0.7)", marginTop: 2 }}>Amazing Thailand Marathon</div>
+            <div style={{ fontSize: 13, color: "rgba(235,235,245,0.7)", marginTop: 2 }}>Amazing Bangkok Marathon</div>
           </div>
           <div style={{ textAlign: "right" }}>
             <div style={{ fontSize: 28, fontWeight: 800, color: "var(--orange)", lineHeight: 1 }}>{daysLeft}</div>
@@ -575,11 +583,8 @@ export default function TodayPage() {
               ))}
             </div>
           ) : (
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10, padding: "12px 0" }}>
-              <div style={{ fontSize: 14, color: "rgba(235,235,245,0.5)" }}>No run logged yet</div>
-              <button onClick={handleSync} style={{ fontSize: 13, color: "var(--green)", background: "none", border: "none", cursor: "pointer", fontFamily: "var(--font-dm-sans)" }}>
-                Sync from Strava →
-              </button>
+            <div style={{ padding: "8px 0", fontSize: 14, color: "rgba(235,235,245,0.45)" }}>
+              No run logged yet — tap ⟳ Sync above
             </div>
           )}
         </div>
