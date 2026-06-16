@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState, useRef } from "react";
-import { format, parseISO } from "date-fns";
+import { format, parseISO, differenceInDays } from "date-fns";
 
 function getBangkokDate() {
   return new Date(Date.now() + 7 * 60 * 60 * 1000).toISOString().slice(0, 10);
@@ -75,8 +75,10 @@ export default function PlanPage() {
   const weekNumbers = Object.keys(weeks).map(Number).sort((a, b) => a - b);
 
   // Stats
-  const totalDays     = 182;
-  const doneDays      = plan.filter(d => d.date <= today && d.type !== "rest" && runMap[d.date]).length;
+  const RACE_DATE      = "2026-11-29";
+  const totalDays      = 182;
+  const daysToRace     = differenceInDays(parseISO(RACE_DATE), parseISO(today));
+  const doneDays       = plan.filter(d => d.date <= today && d.type !== "rest" && runMap[d.date]).length;
   const totalPlannedKm = plan.reduce((s, d) => s + (d.distanceKm ?? 0), 0);
   const totalActualKm  = runs.reduce((s, r) => s + (r.distanceKm ?? 0), 0);
 
@@ -125,8 +127,28 @@ export default function PlanPage() {
         </div>
       </div>
 
+      {/* Race countdown */}
+      <div style={{ padding: "12px 16px 0" }}>
+        <div className="card" style={{
+          padding: "12px 16px",
+          background: "linear-gradient(135deg, rgba(255,159,10,0.1), rgba(255,55,95,0.06))",
+          border: "1px solid rgba(255,159,10,0.2)",
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+        }}>
+          <div>
+            <div style={{ fontSize: 10, fontFamily: "var(--font-dm-mono)", color: "rgba(235,235,245,0.5)", letterSpacing: 1, textTransform: "uppercase" }}>Race Day</div>
+            <div style={{ fontSize: 13, fontWeight: 600, color: "rgba(235,235,245,0.8)", marginTop: 2 }}>Amazing Bangkok Marathon</div>
+            <div style={{ fontSize: 11, color: "rgba(235,235,245,0.45)", fontFamily: "var(--font-dm-mono)", marginTop: 1 }}>Sun, Nov 29, 2026 · Confirmed ✓</div>
+          </div>
+          <div style={{ textAlign: "right" }}>
+            <div style={{ fontSize: 32, fontWeight: 800, color: "var(--orange)", lineHeight: 1 }}>{daysToRace}</div>
+            <div style={{ fontSize: 10, color: "rgba(235,235,245,0.5)", fontFamily: "var(--font-dm-mono)", marginTop: 2 }}>days left</div>
+          </div>
+        </div>
+      </div>
+
       {/* Total stats */}
-      <div style={{ padding: "12px 16px 4px", display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>
+      <div style={{ padding: "8px 16px 4px", display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>
         {[
           { label: "Runs Done", value: doneDays, unit: "sessions" },
           { label: "Actual km", value: totalActualKm.toFixed(0), unit: "km" },
