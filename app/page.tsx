@@ -336,6 +336,42 @@ export default function TodayPage() {
           </div>
         </div>
 
+        {/* ── Daily AI Review ── */}
+        {data?.review && (
+          <div className="card" style={{
+            padding: "16px 18px",
+            background: "linear-gradient(135deg, rgba(191,90,242,0.08), rgba(94,92,230,0.06))",
+            border: "1px solid rgba(191,90,242,0.2)",
+          }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+              <div style={{ fontSize: 11, fontFamily: "var(--font-dm-mono)", color: "rgba(235,235,245,0.62)", letterSpacing: 1.5, textTransform: "uppercase" }}>
+                Coach Review
+              </div>
+              {data.review.score != null && (
+                <div style={{ display: "flex", alignItems: "baseline", gap: 3 }}>
+                  <span style={{ fontSize: 22, fontWeight: 800, color: "var(--purple)", lineHeight: 1 }}>{data.review.score}</span>
+                  <span style={{ fontSize: 11, color: "rgba(235,235,245,0.45)", fontFamily: "var(--font-dm-mono)" }}>/10</span>
+                </div>
+              )}
+            </div>
+            <div style={{ fontSize: 13, color: "rgba(235,235,245,0.8)", lineHeight: 1.6 }}>
+              {data.review.summary}
+            </div>
+            {data.review.flags?.length > 0 && (
+              <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 10 }}>
+                {data.review.flags.map((f: string) => (
+                  <span key={f} style={{
+                    fontSize: 11, fontFamily: "var(--font-dm-mono)",
+                    background: "rgba(191,90,242,0.12)",
+                    color: "var(--purple)",
+                    borderRadius: 6, padding: "2px 8px",
+                  }}>{f}</span>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
         {/* ── Weather ── */}
         {weather?.temp !== null && weather?.temp !== undefined && (
           <div className="card" style={{
