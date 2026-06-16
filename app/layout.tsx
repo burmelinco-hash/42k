@@ -17,6 +17,15 @@ const dmMono = DM_Mono({
 export const metadata: Metadata = {
   title: "Marathon · BKK 2026",
   description: "Amazing Thailand Marathon Bangkok — Nov 29, 2026",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Marathon",
+  },
+  icons: {
+    apple: "/apple-touch-icon.png",
+  },
 };
 
 export const viewport: Viewport = {
