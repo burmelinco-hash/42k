@@ -75,6 +75,11 @@ export default function TodayPage() {
   const [copying, setCopying] = useState(false);
   const [copied, setCopied]   = useState(false);
 
+  // Collapsible sections
+  const [reviewOpen, setReviewOpen]   = useState(false);
+  const [weekOpen, setWeekOpen]       = useState(false);
+  const [runOpen, setRunOpen]         = useState(true);
+
   // RPE
   const [rpeLoading, setRpeLoading] = useState<number | null>(null);
 
@@ -339,34 +344,46 @@ export default function TodayPage() {
         {/* ── Daily AI Review ── */}
         {data?.review && (
           <div className="card" style={{
-            padding: "16px 18px",
             background: "linear-gradient(135deg, rgba(191,90,242,0.08), rgba(94,92,230,0.06))",
             border: "1px solid rgba(191,90,242,0.2)",
           }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-              <div style={{ fontSize: 11, fontFamily: "var(--font-dm-mono)", color: "rgba(235,235,245,0.62)", letterSpacing: 1.5, textTransform: "uppercase" }}>
-                Coach Review
-              </div>
-              {data.review.score != null && (
-                <div style={{ display: "flex", alignItems: "baseline", gap: 3 }}>
-                  <span style={{ fontSize: 22, fontWeight: 800, color: "var(--purple)", lineHeight: 1 }}>{data.review.score}</span>
-                  <span style={{ fontSize: 11, color: "rgba(235,235,245,0.45)", fontFamily: "var(--font-dm-mono)" }}>/10</span>
+            <button
+              onClick={() => setReviewOpen(o => !o)}
+              style={{
+                width: "100%", padding: "14px 18px",
+                background: "none", border: "none", cursor: "pointer",
+                display: "flex", alignItems: "center", justifyContent: "space-between",
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <div style={{ fontSize: 11, fontFamily: "var(--font-dm-mono)", color: "rgba(235,235,245,0.62)", letterSpacing: 1.5, textTransform: "uppercase" }}>
+                  Coach Review
                 </div>
-              )}
-            </div>
-            <div style={{ fontSize: 13, color: "rgba(235,235,245,0.8)", lineHeight: 1.6 }}>
-              {data.review.summary}
-            </div>
-            {data.review.flags?.length > 0 && (
-              <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 10 }}>
-                {data.review.flags.map((f: string) => (
-                  <span key={f} style={{
-                    fontSize: 11, fontFamily: "var(--font-dm-mono)",
-                    background: "rgba(191,90,242,0.12)",
-                    color: "var(--purple)",
-                    borderRadius: 6, padding: "2px 8px",
-                  }}>{f}</span>
-                ))}
+                {data.review.score != null && (
+                  <div style={{ display: "flex", alignItems: "baseline", gap: 2 }}>
+                    <span style={{ fontSize: 16, fontWeight: 800, color: "var(--purple)" }}>{data.review.score}</span>
+                    <span style={{ fontSize: 10, color: "rgba(235,235,245,0.45)", fontFamily: "var(--font-dm-mono)" }}>/10</span>
+                  </div>
+                )}
+              </div>
+              <span style={{ fontSize: 14, color: "rgba(235,235,245,0.5)", transform: reviewOpen ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 200ms" }}>▾</span>
+            </button>
+            {reviewOpen && (
+              <div style={{ padding: "0 18px 16px", borderTop: "1px solid rgba(191,90,242,0.15)" }}>
+                <div style={{ fontSize: 13, color: "rgba(235,235,245,0.8)", lineHeight: 1.6, paddingTop: 12 }}>
+                  {data.review.summary}
+                </div>
+                {data.review.flags?.length > 0 && (
+                  <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 10 }}>
+                    {data.review.flags.map((f: string) => (
+                      <span key={f} style={{
+                        fontSize: 11, fontFamily: "var(--font-dm-mono)",
+                        background: "rgba(191,90,242,0.12)", color: "var(--purple)",
+                        borderRadius: 6, padding: "2px 8px",
+                      }}>{f}</span>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -445,11 +462,22 @@ export default function TodayPage() {
 
         {/* ── This Week's Plan ── */}
         {weekPlan.length > 0 && (
-          <div className="card" style={{ padding: "18px 20px" }}>
-            <div style={{ fontSize: 11, fontFamily: "var(--font-dm-mono)", color: "rgba(235,235,245,0.62)", letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 12 }}>
-              This Week's Plan
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+          <div className="card">
+            <button
+              onClick={() => setWeekOpen(o => !o)}
+              style={{
+                width: "100%", padding: "14px 18px",
+                background: "none", border: "none", cursor: "pointer",
+                display: "flex", alignItems: "center", justifyContent: "space-between",
+              }}
+            >
+              <div style={{ fontSize: 11, fontFamily: "var(--font-dm-mono)", color: "rgba(235,235,245,0.62)", letterSpacing: 1.5, textTransform: "uppercase" }}>
+                This Week's Plan
+              </div>
+              <span style={{ fontSize: 14, color: "rgba(235,235,245,0.5)", transform: weekOpen ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 200ms" }}>▾</span>
+            </button>
+            {weekOpen && <div style={{ padding: "0 18px 14px", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 6, paddingTop: 12 }}>
               {weekPlan.map((d: any) => {
                 const isToday  = d.date === today;
                 const isPast   = d.date < today;
@@ -497,14 +525,31 @@ export default function TodayPage() {
                 );
               })}
             </div>
+            </div>}
           </div>
         )}
 
         {/* ── Today's Run ── */}
-        <div className="card" style={{ padding: "18px 20px" }}>
-          <div style={{ fontSize: 11, fontFamily: "var(--font-dm-mono)", color: "rgba(235,235,245,0.62)", letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 12 }}>
-            Today's Run
-          </div>
+        <div className="card">
+          <button
+            onClick={() => setRunOpen(o => !o)}
+            style={{
+              width: "100%", padding: "14px 18px",
+              background: "none", border: "none", cursor: "pointer",
+              display: "flex", alignItems: "center", justifyContent: "space-between",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <div style={{ fontSize: 11, fontFamily: "var(--font-dm-mono)", color: "rgba(235,235,245,0.62)", letterSpacing: 1.5, textTransform: "uppercase" }}>
+                Today's Run
+              </div>
+              {runs.length > 0 && (
+                <span style={{ fontSize: 13, fontWeight: 700, color: "var(--green)" }}>{runs[0].distanceKm} km</span>
+              )}
+            </div>
+            <span style={{ fontSize: 14, color: "rgba(235,235,245,0.5)", transform: runOpen ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 200ms" }}>▾</span>
+          </button>
+          {runOpen && <div style={{ padding: "0 20px 18px", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
           {runs.length > 0 ? (
             <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
               {runs.map((run: any, idx: number) => (
@@ -619,10 +664,11 @@ export default function TodayPage() {
               ))}
             </div>
           ) : (
-            <div style={{ padding: "8px 0", fontSize: 14, color: "rgba(235,235,245,0.45)" }}>
+            <div style={{ paddingTop: 8, fontSize: 14, color: "rgba(235,235,245,0.45)" }}>
               No run logged yet — tap ⟳ Sync above
             </div>
           )}
+          </div>}
         </div>
 
         {/* ── Note to Coach ── */}
@@ -712,10 +758,26 @@ export default function TodayPage() {
             <div style={{ borderTop: nut.length ? "1px solid rgba(255,255,255,0.06)" : "none", paddingTop: nut.length ? 12 : 0, display: "flex", flexDirection: "column", gap: 12 }}>
               {/* Photo */}
               <div>
-                <div style={{ fontSize: 11, color: "rgba(235,235,245,0.62)", marginBottom: 6, fontFamily: "var(--font-dm-mono)", textTransform: "uppercase", letterSpacing: 1 }}>📷 Photo (AI auto-fill)</div>
-                <input type="file" accept="image/*" capture="environment" onChange={handlePhotoChange}
-                  style={{ fontSize: 12, color: "rgba(235,235,245,0.5)", width: "100%" }} />
-                {photoPreview && <img src={photoPreview} alt="meal" style={{ marginTop: 8, height: 100, borderRadius: 8, objectFit: "cover" }} />}
+                <div style={{ fontSize: 11, color: "rgba(235,235,245,0.62)", marginBottom: 8, fontFamily: "var(--font-dm-mono)", textTransform: "uppercase", letterSpacing: 1 }}>📷 Photo (AI auto-fill)</div>
+                <div style={{ display: "flex", gap: 8 }}>
+                  <label style={{
+                    flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+                    background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)",
+                    borderRadius: 10, padding: "10px", fontSize: 13, color: "rgba(235,235,245,0.7)", cursor: "pointer",
+                  }}>
+                    📸 Camera
+                    <input type="file" accept="image/*" capture="environment" onChange={handlePhotoChange} style={{ display: "none" }} />
+                  </label>
+                  <label style={{
+                    flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+                    background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)",
+                    borderRadius: 10, padding: "10px", fontSize: 13, color: "rgba(235,235,245,0.7)", cursor: "pointer",
+                  }}>
+                    🖼 Gallery
+                    <input type="file" accept="image/*" onChange={handlePhotoChange} style={{ display: "none" }} />
+                  </label>
+                </div>
+                {photoPreview && <img src={photoPreview} alt="meal" style={{ marginTop: 8, width: "100%", maxHeight: 160, borderRadius: 10, objectFit: "cover" }} />}
                 {analyzing && <div style={{ fontSize: 12, color: "var(--orange)", marginTop: 4, fontFamily: "var(--font-dm-mono)" }}>Analyzing…</div>}
               </div>
 
