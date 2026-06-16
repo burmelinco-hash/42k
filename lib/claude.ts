@@ -132,7 +132,7 @@ Format your response as JSON:
 }`;
 
   const response = await getClient().messages.create({
-    model: "claude-sonnet-4-5",
+    model: "claude-haiku-4-5-20251001",
     max_tokens: 600,
     system: SYSTEM_PROMPT,
     messages: [{ role: "user", content: prompt }],
@@ -164,7 +164,7 @@ export async function analyzeMealPhoto(base64Image: string, mediaType: string): 
   confidence: "high" | "medium" | "low";
 }> {
   const response = await getClient().messages.create({
-    model: "claude-sonnet-4-5",
+    model: "claude-haiku-4-5-20251001",
     max_tokens: 500,
     system: SYSTEM_PROMPT,
     messages: [
@@ -285,7 +285,7 @@ ${context.athleteNote
 ⚠ CRITICAL: The date in the box above is the ACTUAL CURRENT DATE. Runs marked "← TODAY" happened today. All other dates are in the past. Do NOT use any other date as "today". If athlete left a note, use it to interpret their workout correctly.`;
 
   const response = await getClient().messages.create({
-    model: "claude-sonnet-4-5",
+    model: "claude-haiku-4-5-20251001",
     max_tokens: 2000,
     system: SYSTEM_PROMPT + "\n\n" + contextBlock,
     messages: messages.map(m => ({ role: m.role, content: m.content })),
