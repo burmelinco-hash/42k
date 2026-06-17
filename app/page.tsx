@@ -90,28 +90,33 @@ export default function TodayPage() {
 
   const loadData = async (silent = false) => {
     if (!silent) setLoading(true);
-    const [todayRes, histRes, noteRes] = await Promise.all([
-      fetch(`/api/sheets?type=today&date=${today}`).then(r => r.json()),
-      fetch(`/api/sheets?type=history`).then(r => r.json()),
-      fetch(`/api/note?date=${today}`).then(r => r.json()),
-    ]);
-    if (todayRes.success) setData(todayRes);
-    if (histRes.success) {
-      const planStart = parseISO("2026-06-01");
-      const weekNum   = Math.ceil((differenceInDays(todayDate, planStart) + 1) / 7);
-      const weekPlan  = (histRes.plan || []).filter((d: any) => d.week === weekNum);
-      const weekDates = weekPlan.map((d: any) => d.date);
-      const wr        = (histRes.runs || []).filter((r: any) => weekDates.includes(r.date) && r.distanceKm >= 1);
-      setWeekRuns(wr);
-      setWeekPlan([...weekPlan].sort((a: any, b: any) => a.date.localeCompare(b.date)));
-      const plannedKm = weekPlan.reduce((s: number, d: any) => s + (d.distanceKm ?? 0), 0);
-      setWeekPlannedKm(plannedKm || 28);
+    try {
+      const [todayRes, histRes, noteRes] = await Promise.all([
+        fetch(`/api/sheets?type=today&date=${today}`).then(r => r.json()).catch(() => ({ success: false })),
+        fetch(`/api/sheets?type=history`).then(r => r.json()).catch(() => ({ success: false })),
+        fetch(`/api/note?date=${today}`).then(r => r.json()).catch(() => ({ success: false })),
+      ]);
+      if (todayRes.success) setData(todayRes);
+      if (histRes.success) {
+        const planStart = parseISO("2026-06-01");
+        const weekNum   = Math.ceil((differenceInDays(todayDate, planStart) + 1) / 7);
+        const weekPlan  = (histRes.plan || []).filter((d: any) => d.week === weekNum);
+        const weekDates = weekPlan.map((d: any) => d.date);
+        const wr        = (histRes.runs || []).filter((r: any) => weekDates.includes(r.date) && r.distanceKm >= 1);
+        setWeekRuns(wr);
+        setWeekPlan([...weekPlan].sort((a: any, b: any) => a.date.localeCompare(b.date)));
+        const plannedKm = weekPlan.reduce((s: number, d: any) => s + (d.distanceKm ?? 0), 0);
+        setWeekPlannedKm(plannedKm || 28);
+      }
+      if (noteRes.success && noteRes.note?.note) {
+        setNote(noteRes.note.note);
+        setSavedNote(noteRes.note.note);
+      }
+    } catch {
+      // prevent page from getting stuck
+    } finally {
+      if (!silent) setLoading(false);
     }
-    if (noteRes.success && noteRes.note?.note) {
-      setNote(noteRes.note.note);
-      setSavedNote(noteRes.note.note);
-    }
-    setLoading(false);
   };
 
   const loadWeather = async () => {
@@ -126,7 +131,7 @@ export default function TodayPage() {
     try {
       const r = await fetch("/api/strava/sync", { method: "POST" }).then(r => r.json());
       setSyncMsg(r.message ?? r.error ?? "");
-      if (r.success) loadData();
+      if (r.success) await loadData();
     } catch (err) {
       setSyncMsg(err instanceof Error ? err.message : "Sync failed");
     } finally {
