@@ -56,6 +56,9 @@ export default function TodayPage() {
   const [syncing, setSyncing]   = useState(false);
   const [syncMsg, setSyncMsg]   = useState("");
 
+  // Coach review
+  const [generatingReview, setGeneratingReview] = useState(false);
+
   // Note to coach
   const [note, setNote]           = useState("");
   const [savedNote, setSavedNote] = useState("");
@@ -125,6 +128,22 @@ export default function TodayPage() {
   };
 
   useEffect(() => { loadData(); loadWeather(); }, []);
+
+  const handleGenerateReview = async () => {
+    setGeneratingReview(true);
+    try {
+      const r = await fetch("/api/review", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ date: today }),
+      }).then(r => r.json());
+      if (r.success) await loadData(true);
+    } catch {
+      // silent fail
+    } finally {
+      setGeneratingReview(false);
+    }
+  };
 
   const handleSync = async () => {
     setSyncing(true); setSyncMsg("");
@@ -270,7 +289,6 @@ export default function TodayPage() {
   const plan = data?.plannedDay;
   const runs = data?.runs ?? [];
   const nut  = data?.nutrition ?? [];
-  const review = data?.review;
 
   return (
     <div style={{ padding: "0 0 8px" }}>
@@ -348,52 +366,77 @@ export default function TodayPage() {
         </div>
 
         {/* ── Daily AI Review ── */}
-        {data?.review && (
-          <div className="card" style={{
+        <div className="card" style={{
             background: "linear-gradient(135deg, rgba(191,90,242,0.08), rgba(94,92,230,0.06))",
             border: "1px solid rgba(191,90,242,0.2)",
           }}>
-            <button
-              onClick={() => setReviewOpen(o => !o)}
-              style={{
-                width: "100%", padding: "14px 18px",
-                background: "none", border: "none", cursor: "pointer",
-                display: "flex", alignItems: "center", justifyContent: "space-between",
-              }}
-            >
-              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                <div style={{ fontSize: 11, fontFamily: "var(--font-dm-mono)", color: "rgba(235,235,245,0.62)", letterSpacing: 1.5, textTransform: "uppercase" }}>
-                  Coach Review
-                </div>
-                {data.review.score != null && (
-                  <div style={{ display: "flex", alignItems: "baseline", gap: 2 }}>
-                    <span style={{ fontSize: 16, fontWeight: 800, color: "var(--purple)" }}>{data.review.score}</span>
-                    <span style={{ fontSize: 10, color: "rgba(235,235,245,0.45)", fontFamily: "var(--font-dm-mono)" }}>/10</span>
+          {data?.review ? (
+            <>
+              <button
+                onClick={() => setReviewOpen(o => !o)}
+                style={{
+                  width: "100%", padding: "14px 18px",
+                  background: "none", border: "none", cursor: "pointer",
+                  display: "flex", alignItems: "center", justifyContent: "space-between",
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <div style={{ fontSize: 11, fontFamily: "var(--font-dm-mono)", color: "rgba(235,235,245,0.62)", letterSpacing: 1.5, textTransform: "uppercase" }}>
+                    Coach Review
                   </div>
-                )}
-              </div>
-              <span style={{ fontSize: 14, color: "rgba(235,235,245,0.5)", transform: reviewOpen ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 200ms" }}>▾</span>
-            </button>
-            {reviewOpen && (
-              <div style={{ padding: "0 18px 16px", borderTop: "1px solid rgba(191,90,242,0.15)" }}>
-                <div style={{ fontSize: 13, color: "rgba(235,235,245,0.8)", lineHeight: 1.6, paddingTop: 12 }}>
-                  {data.review.summary}
+                  {data.review.score != null && (
+                    <div style={{ display: "flex", alignItems: "baseline", gap: 2 }}>
+                      <span style={{ fontSize: 16, fontWeight: 800, color: "var(--purple)" }}>{data.review.score}</span>
+                      <span style={{ fontSize: 10, color: "rgba(235,235,245,0.45)", fontFamily: "var(--font-dm-mono)" }}>/10</span>
+                    </div>
+                  )}
                 </div>
-                {data.review.flags?.length > 0 && (
-                  <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 10 }}>
-                    {data.review.flags.map((f: string) => (
-                      <span key={f} style={{
-                        fontSize: 11, fontFamily: "var(--font-dm-mono)",
-                        background: "rgba(191,90,242,0.12)", color: "var(--purple)",
-                        borderRadius: 6, padding: "2px 8px",
-                      }}>{f}</span>
-                    ))}
+                <span style={{ fontSize: 14, color: "rgba(235,235,245,0.5)", transform: reviewOpen ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 200ms" }}>▾</span>
+              </button>
+              {reviewOpen && (
+                <div style={{ padding: "0 18px 16px", borderTop: "1px solid rgba(191,90,242,0.15)" }}>
+                  <div style={{ fontSize: 13, color: "rgba(235,235,245,0.8)", lineHeight: 1.6, paddingTop: 12 }}>
+                    {data.review.summary}
                   </div>
-                )}
+                  {data.review.flags?.length > 0 && (
+                    <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 10 }}>
+                      {data.review.flags.map((f: string) => (
+                        <span key={f} style={{
+                          fontSize: 11, fontFamily: "var(--font-dm-mono)",
+                          background: "rgba(191,90,242,0.12)", color: "var(--purple)",
+                          borderRadius: 6, padding: "2px 8px",
+                        }}>{f}</span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </>
+          ) : (
+            <div style={{ padding: "14px 18px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <div style={{ fontSize: 11, fontFamily: "var(--font-dm-mono)", color: "rgba(235,235,245,0.62)", letterSpacing: 1.5, textTransform: "uppercase" }}>
+                Coach Review
               </div>
-            )}
+              <button
+                onClick={handleGenerateReview}
+                disabled={generatingReview}
+                style={{
+                  background: "rgba(191,90,242,0.15)",
+                  border: "1px solid rgba(191,90,242,0.35)",
+                  color: "var(--purple)",
+                  borderRadius: 20,
+                  padding: "6px 14px",
+                  fontSize: 12,
+                  fontFamily: "var(--font-dm-mono)",
+                  cursor: "pointer",
+                  opacity: generatingReview ? 0.5 : 1,
+                }}
+              >
+                {generatingReview ? "Generating…" : "Get Review"}
+              </button>
+            </div>
+          )}
           </div>
-        )}
 
         {/* ── Weather ── */}
         {weather?.temp !== null && weather?.temp !== undefined && (
@@ -676,44 +719,6 @@ export default function TodayPage() {
           )}
           </div>}
         </div>
-
-        {/* ── Coach Review ── */}
-        {review && (
-          <div className="card" style={{ padding: "18px 20px" }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-              <div style={{ fontSize: 11, fontFamily: "var(--font-dm-mono)", color: "rgba(235,235,245,0.62)", letterSpacing: 1.5, textTransform: "uppercase" }}>
-                Coach Review
-              </div>
-              {review.score !== null && (
-                <div style={{
-                  display: "flex", alignItems: "center", gap: 6,
-                  background: review.score >= 7 ? "rgba(45,212,191,0.12)" : review.score >= 4 ? "rgba(255,159,10,0.12)" : "rgba(255,55,95,0.12)",
-                  border: `1px solid ${review.score >= 7 ? "rgba(45,212,191,0.3)" : review.score >= 4 ? "rgba(255,159,10,0.3)" : "rgba(255,55,95,0.3)"}`,
-                  borderRadius: 12, padding: "3px 10px",
-                }}>
-                  <span style={{
-                    fontSize: 14, fontWeight: 700,
-                    color: review.score >= 7 ? "var(--green)" : review.score >= 4 ? "var(--orange)" : "var(--red)",
-                  }}>{review.score}</span>
-                  <span style={{ fontSize: 11, color: "rgba(235,235,245,0.5)" }}>/10</span>
-                </div>
-              )}
-            </div>
-            <div style={{ fontSize: 13, color: "rgba(235,235,245,0.75)", lineHeight: 1.6, marginBottom: review.flags?.length ? 12 : 0 }}>
-              {review.summary}
-            </div>
-            {review.flags?.length > 0 && (
-              <div style={{ display: "flex", flexDirection: "column", gap: 6, paddingTop: 12, borderTop: "1px solid rgba(255,255,255,0.06)" }}>
-                {review.flags.map((flag: string, i: number) => (
-                  <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
-                    <span style={{ fontSize: 11, color: "var(--orange)", marginTop: 2 }}>▸</span>
-                    <span style={{ fontSize: 12, color: "rgba(235,235,245,0.6)", lineHeight: 1.5 }}>{flag}</span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
 
         {/* ── Note to Coach ── */}
         <div className="card" style={{ padding: "16px 18px" }}>
