@@ -256,6 +256,7 @@ export default function TodayPage() {
   const plan = data?.plannedDay;
   const runs = data?.runs ?? [];
   const nut  = data?.nutrition ?? [];
+  const review = data?.review;
 
   return (
     <div style={{ padding: "0 0 8px" }}>
@@ -587,6 +588,44 @@ export default function TodayPage() {
             </div>
           )}
         </div>
+
+        {/* ── Coach Review ── */}
+        {review && (
+          <div className="card" style={{ padding: "18px 20px" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+              <div style={{ fontSize: 11, fontFamily: "var(--font-dm-mono)", color: "rgba(235,235,245,0.62)", letterSpacing: 1.5, textTransform: "uppercase" }}>
+                Coach Review
+              </div>
+              {review.score !== null && (
+                <div style={{
+                  display: "flex", alignItems: "center", gap: 6,
+                  background: review.score >= 7 ? "rgba(45,212,191,0.12)" : review.score >= 4 ? "rgba(255,159,10,0.12)" : "rgba(255,55,95,0.12)",
+                  border: `1px solid ${review.score >= 7 ? "rgba(45,212,191,0.3)" : review.score >= 4 ? "rgba(255,159,10,0.3)" : "rgba(255,55,95,0.3)"}`,
+                  borderRadius: 12, padding: "3px 10px",
+                }}>
+                  <span style={{
+                    fontSize: 14, fontWeight: 700,
+                    color: review.score >= 7 ? "var(--green)" : review.score >= 4 ? "var(--orange)" : "var(--red)",
+                  }}>{review.score}</span>
+                  <span style={{ fontSize: 11, color: "rgba(235,235,245,0.5)" }}>/10</span>
+                </div>
+              )}
+            </div>
+            <div style={{ fontSize: 13, color: "rgba(235,235,245,0.75)", lineHeight: 1.6, marginBottom: review.flags?.length ? 12 : 0 }}>
+              {review.summary}
+            </div>
+            {review.flags?.length > 0 && (
+              <div style={{ display: "flex", flexDirection: "column", gap: 6, paddingTop: 12, borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+                {review.flags.map((flag: string, i: number) => (
+                  <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
+                    <span style={{ fontSize: 11, color: "var(--orange)", marginTop: 2 }}>▸</span>
+                    <span style={{ fontSize: 12, color: "rgba(235,235,245,0.6)", lineHeight: 1.5 }}>{flag}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* ── Note to Coach ── */}
         <div className="card" style={{ padding: "16px 18px" }}>
